@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: content-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/vsp_content_db
+    username: root
+    password: YourNewPassword123!
+    driver-classname-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
