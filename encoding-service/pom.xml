@@ -69,6 +69,10 @@
             <version>2.53.3</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>

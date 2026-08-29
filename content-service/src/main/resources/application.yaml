@@ -6,7 +6,7 @@ spring:
     url: jdbc:mysql://localhost:3306/vsp_content_db
     username: root
     password: YourNewPassword123!
-    driver-classname-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
@@ -16,6 +16,24 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: content-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+    properties:
+      spring:
+        json:
+          trusted:
+            packages: "*"
+          use:
+            type:
+              headers: false
+          value:
+            default:
+              type: java.util.HashMap
 server:
   port: 8081
 

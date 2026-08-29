@@ -112,6 +112,15 @@ public class ContentService {
         contentRepostiory.save(movie);
     }
 
+    public void updateVideoStatus(String movieId,VideoStatus videoStatus){
+        Movie movie = contentRepostiory.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Movie not found : "+movieId));
+
+        movie.setVideoStatus(videoStatus);
+
+        contentRepostiory.save(movie);
+    }
+
     // update hlsUrl
     public void updateHlsUrl(String movieId,String hlsUrl){
         log.info("updating hlsUrl for movie : {}",movieId);
@@ -121,6 +130,8 @@ public class ContentService {
 
         movie.setHlsUrl(hlsUrl);
         movie.setVideoStatus(VideoStatus.READY);
+
+        contentRepostiory.save(movie);
 
         log.info("Movie is now ready for streaming : {}",movie);
     }

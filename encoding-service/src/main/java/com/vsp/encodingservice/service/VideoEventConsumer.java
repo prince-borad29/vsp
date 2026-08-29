@@ -28,7 +28,7 @@ public class VideoEventConsumer {
             topics = "video.uploaded",
             groupId = "encoding-service-group"
     )
-    public void consumeVideoUPloadedEvent(VideoUploadedEvent event){
+    public void consumeVideoUploadedEvent(VideoUploadedEvent event){
         log.info("Consumed video uploaded event for movie : {} file : {}",
                 event.getMovieId(),event.getOriginalFileName());
 

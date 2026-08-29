@@ -77,7 +77,7 @@ public class EncodingService {
             Files.createDirectories(Paths.get(jobPath + "/encoded"));
 
             //download video from s3
-            String localVideoPath = jobPath + "/raw_video,mp4";
+            String localVideoPath = jobPath + "/raw_video.mp4";
             downloadFromS3(event.getVideoKey(),localVideoPath);
             log.info("raw video downloaded  to {}",localVideoPath);
 
@@ -87,7 +87,7 @@ public class EncodingService {
                 int bitrate = quailities[1];
                 int height = quailities[2];
 
-                String qualityDir = jobPath + "/encoded" + height + "p";
+                String qualityDir = jobPath + "/encoded/" + height + "p";
                 Files.createDirectories(Paths.get(qualityDir));
 
                 encodeToHLS(localVideoPath,qualityDir,width,height,bitrate);
@@ -102,7 +102,7 @@ public class EncodingService {
 
             // upload all resources file back to S3
             String encodedPrefix = "encoded/" + event.getMovieId() + "/";
-            uploadEncodedFileToS3(jobPath , "/encoded" + encodedPrefix);
+            uploadEncodedFileToS3(jobPath + "/encoded" , encodedPrefix);
             log.info("All encoded files uploaded to s3");
 
             // publish video encoded event
@@ -158,14 +158,14 @@ public class EncodingService {
      *
      * FFmpeg command :
      * - create multiple .ts segment files , 10 seconds = 1 segment
-     * - A .m3u8 playlist file for multiple qualities (1080,720,360)p
+     * - A .m3u8 playlist file for multiple qualities (1080,720,480,360)p
      */
-    private void encodeToHLS(String inputPath,String outputDir, int width , int bitrate , int height) throws IOException, InterruptedException {
+    private void encodeToHLS(String inputPath,String outputDir, int width , int bitrate , int height)
+            throws IOException, InterruptedException {
         String playlistPath = outputDir + "/playlist.m3u8";
         String segmentPattern = outputDir + "/segment_%03d.ts";
 
         // FFmpeg command for playlist
-
         List<String> command = Arrays.asList(
           ffmpegPath,
                 "-i" , inputPath,                           // input path
@@ -183,6 +183,7 @@ public class EncodingService {
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);
+        processBuilder.inheritIO();
         Process process = processBuilder.start();
 
         int exitCode = process.waitFor();
@@ -201,7 +202,7 @@ public class EncodingService {
     private void generateMasterPlaylist(String masterPlaylistPath) throws IOException {
         StringBuilder master = new StringBuilder();
         master.append("#EXTM3U\n");  // tells video player this is extended m3u8 plalist
-        master.append("EXT-X-VERSION:3\n\n");
+        master.append("#EXT-X-VERSION:3\n\n");
 
         //Add each quality in master playlist
         int[][] qualities = {
@@ -216,10 +217,10 @@ public class EncodingService {
             int bitrate = q[1];
             int height = q[2];
 
-            master.append("EXT-X-STREAM-INF-BANDWIDTH=")
+            master.append("#EXT-X-STREAM-INF:BANDWIDTH=")
                     .append(bitrate*1000)
-                    .append(", Resolution=").append(width).append("x").append(height)
-                    .append(", CODECS=\"avc1.42e01e,mp4a.40.2\"\n");
+                    .append(",Resolution=").append(width).append("x").append(height)
+                    .append(",CODECS=\"avc1.42e01e,mp4a.40.2\"\n");
             master.append(height).append("p/playlist.m3u8\n\n");
         }
 
@@ -245,7 +246,7 @@ public class EncodingService {
     private void uploadDirectoryToS3(File dir,String baseDir , String s3Prefix){
         for(File file : dir.listFiles()){
             if(file.isDirectory()){
-                uploadDirectoryToS3(dir,baseDir,s3Prefix);
+                uploadDirectoryToS3(file,baseDir,s3Prefix);
             }else{
                 String relativePath = file.getAbsolutePath()
                         .substring(baseDir.length()+1)

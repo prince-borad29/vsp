@@ -2,16 +2,19 @@ package com.vsp.videoservice.service;
 
 import com.vsp.videoservice.event.VideoUploadedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.ContentStreamProvider;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.UUID;
 
 @Service
@@ -53,8 +56,11 @@ public class VideoService {
                 .contentLength(file.getSize())
                 .build();
 
-        s3Client.putObject(putObjectRequest,
-                RequestBody.fromInputStream(file.getInputStream(),file.getSize()));
+//        s3Client.putObject(putObjectRequest,
+//                RequestBody.fromInputStream(file.getInputStream(),file.getSize()));
+
+        // Replace the stream line with this:
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
         log.info("Video uploaded to S3 successfully , key : {}",videoKey);
 
