@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 public class Movie {
 
+    @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
@@ -34,7 +35,7 @@ public class Movie {
     private String cast;
     private int releaseYear;
 
-    private int rating;
+    private double rating;
     private String thumbnailUrl;
     private int durationInMinutes;
 

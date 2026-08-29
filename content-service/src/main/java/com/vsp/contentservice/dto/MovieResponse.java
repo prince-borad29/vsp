@@ -22,7 +22,7 @@ public class MovieResponse  {
     private String director;
     private String cast;
     private int releaseYear;
-    private int rating;
+    private double rating;
     private String thumbnailUrl;
     private int durationInMinutes;
     private String videoKey;
