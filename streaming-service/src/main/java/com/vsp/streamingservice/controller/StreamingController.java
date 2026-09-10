@@ -12,13 +12,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/stream")
 @Slf4j
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class StreamingController {
 
     private final StreamingService streamingService;
-    private final RedisTemplate<String,String> redisTemplate;
-
-    private static final String MASTER_PLAYLIST_KEY_PREFIX = "streaming:playlist:";
 
     /**
      * Get Streaming URL for movie
@@ -42,7 +38,6 @@ public class StreamingController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
     /**
      * signed m3u8 playlist content

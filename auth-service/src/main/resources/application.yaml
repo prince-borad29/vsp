@@ -1,0 +1,20 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/vsp_content_db
+    username: root
+    password: YourNewPassword123!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  # MUST match the API Gateway secret exactly
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24 hours in milliseconds

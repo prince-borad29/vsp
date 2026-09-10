@@ -1,13 +1,16 @@
 package com.vsp.contentservice.controller;
 
+import com.vsp.contentservice.dto.ContentResponse;
 import com.vsp.contentservice.dto.MovieRequest;
 import com.vsp.contentservice.dto.MovieResponse;
 import com.vsp.contentservice.model.Genre;
 import com.vsp.contentservice.service.ContentService;
+import jakarta.validation.Configuration;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,5 +54,13 @@ public class ContentController {
     public ResponseEntity<List<MovieResponse>> searchMovies(
             @RequestParam String title){
         return ResponseEntity.ok(contentService.searchMovies(title));
+    }
+
+    @GetMapping(
+            value = "/{movieId}/hls-url",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ContentResponse getHlsUrlForStreaming(@PathVariable String movieId){
+        return contentService.getHlsUrlForStreaming(movieId);
     }
 }

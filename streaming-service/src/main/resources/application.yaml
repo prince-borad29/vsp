@@ -40,6 +40,9 @@ aws:
     bucket-name: ${AWS_BUCKET_NAME}
     presigned-url-expiry: ${AWS_S3_PRESIGNED_URL_EXPIRY:60}
 
+content-service:
+  base-url: ${CONTENT_SERVICE_URL}
+
 #actuator
 management:
   endpoints:

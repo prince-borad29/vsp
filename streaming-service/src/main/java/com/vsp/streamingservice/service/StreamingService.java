@@ -1,5 +1,6 @@
 package com.vsp.streamingservice.service;
 
+import com.vsp.streamingservice.dto.ContentResponse;
 import com.vsp.streamingservice.dto.StreamingResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -15,6 +17,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
+import javax.swing.text.AbstractDocument;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.Duration;
@@ -29,6 +32,7 @@ public class StreamingService {
     private final S3Presigner s3Presigner;
     private final RedisTemplate<String,String> redisTemplate;
     private final S3Client s3Client;
+    private final RestClient restClient;
 
     @Value("${aws.s3.bucket-name}")
     private String bucket_name;
@@ -75,7 +79,10 @@ public class StreamingService {
                 .get(MASTER_PLAYLIST_KEY_PREFIX + movieId);
 
         if (playlistKey == null) {
-            throw new RuntimeException("Movie not ready for streaming: " + movieId);
+            //if playlistKey not in redis then get it from content-service
+            playlistKey = "encoded/" + movieId + "/master.m3u8";
+
+            redisTemplate.opsForValue().set(MASTER_PLAYLIST_KEY_PREFIX + movieId ,playlistKey);
         }
 
         //generate presigned url from s3
@@ -138,9 +145,6 @@ public class StreamingService {
         //rewrite each line that is a segment or playlist reference
         String signedContent = rewriteM3urSignedUrls(
                 m3u8Content,basePath);
-
-
-
         return signedContent;
     }
 

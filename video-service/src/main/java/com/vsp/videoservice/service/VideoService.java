@@ -2,19 +2,16 @@ package com.vsp.videoservice.service;
 
 import com.vsp.videoservice.event.VideoUploadedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.http.ContentStreamProvider;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.UUID;
 
 @Service
@@ -30,52 +27,53 @@ public class VideoService {
 
     private static final String VIDEO_UPLOADED_TOPIC = "video.uploaded";
 
-    // uploading video to aws and publishing video update event for kafka
+    public String uploadVideo(String movieId, MultipartFile videoFile, MultipartFile thumbnailFile) throws IOException {
+        log.info("Starting upload for movie : {} file : {}", movieId, videoFile.getOriginalFilename());
 
-    /**
-     * FLOW
-     * 1. receive multipart-file
-     * 2. generate unique s3 key
-     * 3. upload to s3
-     * 4. publish videoUploadedEvent to kafka
-     * 5. encoding service picks up and start FFmpeg
-     */
+        boolean generateThumbnail = true;
 
-    public String uploadVideo(String movieId , MultipartFile file) throws IOException {
-        log.info("Starting video upload for movie : {} file : {}",movieId,file.getOriginalFilename());
+        // 1. Process Custom Thumbnail (If Provided)
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            // Using a static name ensures S3 overwrites the old image on updates
+            String thumbnailKey = "encoded/" + movieId + "/thumbnail.jpg";
 
-        //Generate unique S3 key for video
-        // format : raw/movieId/uuid_filename
+            PutObjectRequest thumbRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(thumbnailKey)
+                    .contentType(thumbnailFile.getContentType())
+                    .build();
 
-        String videoKey = "raw/" + movieId + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+            s3Client.putObject(thumbRequest, RequestBody.fromBytes(thumbnailFile.getBytes()));
+            log.info("Custom thumbnail uploaded to S3, key : {}", thumbnailKey);
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+            generateThumbnail = false; // Tell encoding service to skip extraction
+        }
+
+        // 2. Process Raw Video Upload
+        String videoKey = "raw/" + movieId + "/" + UUID.randomUUID() + "_" + videoFile.getOriginalFilename();
+
+        PutObjectRequest videoRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(videoKey)
-                .contentType(file.getContentType())
-                .contentLength(file.getSize())
+                .contentType(videoFile.getContentType())
+                .contentLength(videoFile.getSize())
                 .build();
 
-//        s3Client.putObject(putObjectRequest,
-//                RequestBody.fromInputStream(file.getInputStream(),file.getSize()));
+        s3Client.putObject(videoRequest, RequestBody.fromBytes(videoFile.getBytes()));
+        log.info("Video uploaded to S3 successfully , key : {}", videoKey);
 
-        // Replace the stream line with this:
-        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
-        log.info("Video uploaded to S3 successfully , key : {}",videoKey);
-
-        //publish kafka event
-        //encoding service consume this and start working
+        // 3. Publish Kafka Event
         VideoUploadedEvent event = new VideoUploadedEvent(
                 movieId,
                 videoKey,
                 bucketName,
-                file.getOriginalFilename(),
-                file.getSize()
+                videoFile.getOriginalFilename(),
+                videoFile.getSize(),
+                generateThumbnail
         );
 
-        kafkaTemplate.send(VIDEO_UPLOADED_TOPIC,movieId,event);
-        log.info("Video uploaded event published for movie {}", movieId);
+        kafkaTemplate.send(VIDEO_UPLOADED_TOPIC, movieId, event);
+        log.info("Published video.uploaded for {}. Auto-generate thumbnail: {}", movieId, generateThumbnail);
 
         return videoKey;
     }

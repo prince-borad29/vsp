@@ -1,5 +1,6 @@
 package com.vsp.contentservice.service;
 
+import com.vsp.contentservice.dto.ContentResponse;
 import com.vsp.contentservice.dto.MovieRequest;
 import com.vsp.contentservice.dto.MovieResponse;
 import com.vsp.contentservice.model.Genre;
@@ -134,5 +135,16 @@ public class ContentService {
         contentRepostiory.save(movie);
 
         log.info("Movie is now ready for streaming : {}",movie);
+    }
+
+    public ContentResponse getHlsUrlForStreaming(String movieId){
+        String url = contentRepostiory.findHlsUrlByMovieId(movieId)
+                .orElseThrow(() -> new RuntimeException("not found"));
+
+        ContentResponse response = ContentResponse.builder()
+                .hlsUrl(url)
+                .build();
+
+        return response;
     }
 }

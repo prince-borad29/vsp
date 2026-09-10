@@ -14,5 +14,6 @@ public class VideoUploadedEvent {
     private String bucketName;
     private String originalFileName;
     private long fileSizeBytes;
+    private boolean generateThumbnail;
 
 }
