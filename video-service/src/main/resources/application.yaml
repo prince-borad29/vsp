@@ -6,7 +6,7 @@ spring:
     bootstrap-server: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   servlet:
     multipart:
@@ -23,6 +23,7 @@ aws:
   region: ${AWS_REGION}
   s3:
     bucket-name: ${AWS_BUCKET_NAME}
+    thumbnail-bucket: ${AWS_THUMBNAIL_BUCKET}
 
 #actuator
 management:

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +31,9 @@ public class EncodingService {
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
+
+    @Value("${aws.s3.thumbnail-bucket}")
+    private String publicBucket;
 
     @Value("${ffmpeg.path}")
     private String ffmpegPath;
@@ -61,15 +65,42 @@ public class EncodingService {
             downloadFromS3(event.getVideoKey(), localVideoPath);
             log.info("raw video downloaded to {}", localVideoPath);
 
-            // ==========================================
-            // NEW: GENERATE THUMBNAIL IF REQUESTED
-            // ==========================================
+            // GENERATE THUMBNAIL IF REQUESTED
             if (event.isGenerateThumbnail()) {
                 log.info("Auto-generating thumbnail for movie: {}", event.getMovieId());
                 generateAndUploadThumbnail(localVideoPath, event.getMovieId(), jobPath);
             } else {
                 log.info("Custom thumbnail was provided, skipping auto-generation.");
             }
+
+            //AES-128 ENCRYPTION KEY GENERATION
+            log.info("Generating AES-128 key for movie: {}", event.getMovieId());
+
+            // The URL the frontend player will call to get the key
+            String keyUri = "http://localhost:8080/api/v1/stream/" + event.getMovieId() + "/key";
+
+            // Temporary local paths
+            String keyFilePath = jobPath + "/enc.key";
+            String keyInfoPath = jobPath + "/enc.keyinfo";
+
+            // Generate 16 secure random bytes
+            byte[] aesKey = new byte[16];
+            new SecureRandom().nextBytes(aesKey);
+            Files.write(Paths.get(keyFilePath), aesKey);
+
+            // Create the FFmpeg key_info file
+            String keyInfoContent = keyUri + "\n" + keyFilePath;
+            Files.writeString(Paths.get(keyInfoPath), keyInfoContent);
+
+            // Upload the RAW KEY to the PRIVATE S3 Bucket (bucketName)
+            String s3KeyPath = "keys/" + event.getMovieId() + "/enc.key";
+            PutObjectRequest putKeyRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3KeyPath)
+                    .contentType("application/octet-stream")
+                    .build();
+            s3Client.putObject(putKeyRequest, RequestBody.fromBytes(aesKey));
+            log.info("Securely uploaded AES key to private bucket: {}", s3KeyPath);
 
             // encode to multiple qualities and generate hls
             for (int[] quailities : VIDEO_QUALITIES) {
@@ -80,7 +111,7 @@ public class EncodingService {
                 String qualityDir = jobPath + "/encoded/" + height + "p";
                 Files.createDirectories(Paths.get(qualityDir));
 
-                encodeToHLS(localVideoPath, qualityDir, width, height, bitrate);
+                encodeToHLS(localVideoPath, qualityDir, width, height, bitrate,keyInfoPath);
                 log.info("Encoded {}p successfully", height);
             }
 
@@ -147,9 +178,9 @@ public class EncodingService {
             int exitCode = process.waitFor();
 
             if (exitCode == 0) {
-                String s3Key = "encoded/" + movieId + "/thumbnail.jpg";
+                String s3Key = "thumbnails/" + movieId + "/thumbnail.jpg";
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                        .bucket(bucketName)
+                        .bucket(publicBucket)
                         .key(s3Key)
                         .contentType("image/jpeg")
                         .build();
@@ -173,7 +204,7 @@ public class EncodingService {
         s3Client.getObject(getObjectRequest, Paths.get(localPath));
     }
 
-    private void encodeToHLS(String inputPath, String outputDir, int width, int bitrate, int height)
+    private void encodeToHLS(String inputPath, String outputDir, int width, int bitrate, int height, String keyInfoPath)
             throws IOException, InterruptedException {
         String playlistPath = outputDir + "/playlist.m3u8";
         String segmentPattern = outputDir + "/segment_%03d.ts";
@@ -189,6 +220,7 @@ public class EncodingService {
                 "-hls_time", "10",
                 "-hls_list_size", "0",
                 "-hls_segment_filename", segmentPattern,
+                "-hls_key_info_file",keyInfoPath,
                 "-f", "hls",
                 playlistPath
         );

@@ -2,13 +2,13 @@ package com.vsp.streamingservice.config;
 
 import com.vsp.streamingservice.event.VideoEncodedEvent;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 @Configuration
 public class KafkaConfig {
@@ -17,13 +17,13 @@ public class KafkaConfig {
     public ConsumerFactory<String, VideoEncodedEvent> consumerFactory(
             KafkaProperties properties) {
 
-        JacksonJsonDeserializer<VideoEncodedEvent> deserializer =
-                new JacksonJsonDeserializer<>(VideoEncodedEvent.class);
+        JsonDeserializer<VideoEncodedEvent> deserializer =
+                new JsonDeserializer<>(VideoEncodedEvent.class);
 
         deserializer.setUseTypeHeaders(false);
 
         return new DefaultKafkaConsumerFactory<>(
-                properties.buildConsumerProperties(),
+                properties.buildConsumerProperties(null),
                 new StringDeserializer(),
                 deserializer
         );

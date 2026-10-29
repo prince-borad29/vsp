@@ -14,8 +14,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.List;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -28,15 +26,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     @Override
-    public List<String> shortcutFieldOrder() {
-        return Arrays.asList("requiredRole");
-    }
-
-    @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             // 1. Check if the Authorization header exists
-            if (!exchange.getRequest().getHeaders().containsHeader(HttpHeaders.AUTHORIZATION)) {
+            if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                 return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);
             }
 
@@ -62,7 +55,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 String email = claims.getSubject();
                 Object userId = claims.get("userId");
 
-                // RBAC Check: If this route specifies a required role, verify it
+                    // RBAC Check: If this route specifies a required role, verify it
                 if (config.getRequiredRole() != null && !config.getRequiredRole().isBlank()) {
                     if (!config.getRequiredRole().equalsIgnoreCase(tokenRole)) {
                         return onError(exchange,"you are not authorized" ,HttpStatus.FORBIDDEN);

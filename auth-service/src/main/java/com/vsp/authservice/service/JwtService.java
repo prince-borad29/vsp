@@ -1,6 +1,8 @@
 package com.vsp.authservice.service;
 
+import com.vsp.authservice.dto.UserDto;
 import com.vsp.authservice.entity.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -31,6 +33,28 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiry))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public UserDto verifyToken(String token){
+        Key key = Keys.hmacShaKeyFor(secret.getBytes());
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String tokenRole = claims.get("role", String.class);
+        String email = claims.getSubject();
+        String name = claims.get("name", String.class);
+        String userId = claims.get("userId", String.class);
+
+        UserDto user = UserDto.builder()
+                .id(userId)
+                .email(email)
+                .name(name)
+                .role(tokenRole)
+                .build();
+        return user;
     }
 
 }

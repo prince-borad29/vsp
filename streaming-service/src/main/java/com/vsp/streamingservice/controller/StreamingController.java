@@ -60,4 +60,27 @@ public class StreamingController {
 
     }
 
+    /**
+     * Serve the raw AES-128 decryption key.
+     *
+     * GET /api/v1/stream/{movieId}/key
+     */
+    @GetMapping(value = "/{movieId}/key", produces = org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> getDecryptionKey(@PathVariable String movieId) {
+
+        log.info("Decryption key requested for movie: {}", movieId);
+
+        try {
+            byte[] key = streamingService.getDecryptionKey(movieId);
+
+            return ResponseEntity.ok()
+                    .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    .header("Pragma", "no-cache")
+                    .header("Expires", "0")
+                    .body(key);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

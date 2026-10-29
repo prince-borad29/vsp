@@ -198,4 +198,28 @@ public class StreamingService {
         log.info("Streaming url cache invalidated for movie : {}",movieId);
     }
 
+    /**
+     * Retrieves the raw AES-128 decryption key from the private S3 bucket.
+     * This key is required by the frontend video player to unscramble the video chunks.
+     */
+    public byte[] getDecryptionKey(String movieId) {
+        log.info("Fetching AES decryption key for movie: {}", movieId);
+        String keyPath = "keys/" + movieId + "/enc.key";
+
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket(bucket_name) // Using your secure private bucket
+                .key(keyPath)
+                .build();
+
+        try {
+            // Using getObjectAsBytes instead of an InputStream for binary data
+            software.amazon.awssdk.core.ResponseBytes<GetObjectResponse> objectBytes =
+                    s3Client.getObjectAsBytes(request);
+            return objectBytes.asByteArray();
+        } catch (Exception e) {
+            log.error("Failed to retrieve encryption key for movie: {}", movieId, e);
+            throw new RuntimeException("Could not retrieve media decryption key");
+        }
+    }
+
 }

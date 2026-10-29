@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.vsp</groupId>
+    <artifactId>vsp-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <!-- Crucial: This tells Maven this is a Parent project, not a Java app -->
+    <packaging>pom</packaging>
+
+    <!-- 1. Define all your microservices here -->
+    <modules>
+        <module>api-gateway</module>
+        <module>auth-service</module>
+        <module>content-service</module>
+        <module>encoding-service</module>
+        <module>video-service</module>
+        <module>streaming-service</module>
+        <module>review-service</module>
+    </modules>
+
+    <!-- 2. Set the global Spring Boot version -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.4</version> <!-- Match this to whatever version you are using -->
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <java.version>17</java.version>
+        <!-- 3. Set the global Spring Cloud version that matches your Spring Boot version -->
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <aws.sdk.version>2.53.3</aws.sdk.version>
+    </properties>
+
+    <!-- 4. The BOM (Bill of Materials) - This prevents the Gateway crash -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>5.4.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>5.4</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

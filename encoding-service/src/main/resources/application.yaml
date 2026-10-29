@@ -7,7 +7,7 @@ spring:
       group-id: encoding-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     properties:
       spring:
         json:
@@ -21,7 +21,7 @@ spring:
               type: com.vsp.encodingservice.event.VideoUploadedEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 server:
   port: 8083
@@ -33,6 +33,7 @@ aws:
   region: ${AWS_REGION}
   s3:
     bucket-name: ${AWS_BUCKET_NAME}
+    thumbnail-bucket: ${AWS_THUMBNAIL_BUCKET}
 
 #FFmpe configuration
 ffmpeg:

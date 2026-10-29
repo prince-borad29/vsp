@@ -5,10 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "movies")
@@ -35,7 +38,8 @@ public class Movie {
     private String cast;
     private int releaseYear;
 
-    private double rating;
+    @Builder.Default
+    private double rating = 0.0;
     private String thumbnailUrl;
     private int durationInMinutes;
 
@@ -52,7 +56,7 @@ public class Movie {
     private VideoStatus videoStatus;
 
     @CreationTimestamp
-    private LocalDateTime createdRAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;

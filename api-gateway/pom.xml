@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.8</version> <!-- Spring Boot 4.0.8 -->
-        <relativePath/>
+        <groupId>com.vsp</groupId>
+        <artifactId>vsp-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>com.vsp</groupId>
@@ -15,18 +15,18 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <java.version>21</java.version> <!-- Spring Boot 4 strongly recommends Java 21+ -->
-        <spring-cloud.version>2025.1.3</spring-cloud.version> <!-- Compatible Cloud Version -->
+        <java.version>17</java.version>
+        <!-- Corrected to a valid Maven Central Release Train -->
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
     </properties>
 
     <dependencies>
-        <!-- 1. The Gateway (No hardcoded version!) -->
+        <!-- Corrected: Removed the hardcoded version tag here -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
 
-        <!-- 3. JWT Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -43,12 +43,6 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>0.11.5</version>
             <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

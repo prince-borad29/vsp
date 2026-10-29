@@ -25,6 +25,9 @@ public class VideoService {
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
+    @Value("${aws.s3.thumbnail-bucket}")
+    private String publicBucket;
+
     private static final String VIDEO_UPLOADED_TOPIC = "video.uploaded";
 
     public String uploadVideo(String movieId, MultipartFile videoFile, MultipartFile thumbnailFile) throws IOException {
@@ -35,10 +38,10 @@ public class VideoService {
         // 1. Process Custom Thumbnail (If Provided)
         if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
             // Using a static name ensures S3 overwrites the old image on updates
-            String thumbnailKey = "encoded/" + movieId + "/thumbnail.jpg";
+            String thumbnailKey = "thumbnails/" + movieId + "/thumbnail.jpg";
 
             PutObjectRequest thumbRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(publicBucket)
                     .key(thumbnailKey)
                     .contentType(thumbnailFile.getContentType())
                     .build();

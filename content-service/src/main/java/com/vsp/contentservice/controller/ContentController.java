@@ -1,8 +1,6 @@
 package com.vsp.contentservice.controller;
 
-import com.vsp.contentservice.dto.ContentResponse;
-import com.vsp.contentservice.dto.MovieRequest;
-import com.vsp.contentservice.dto.MovieResponse;
+import com.vsp.contentservice.dto.*;
 import com.vsp.contentservice.model.Genre;
 import com.vsp.contentservice.service.ContentService;
 import jakarta.validation.Configuration;
@@ -29,6 +27,12 @@ public class ContentController {
     public ResponseEntity<MovieResponse>  addMovie(@Valid @RequestBody MovieRequest movieRequest){
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(contentService.addMovie(movieRequest));
+    }
+
+    //Update movie catalog
+    @PatchMapping
+    public ResponseEntity<MovieUpdateResponse> updateMovie(@Valid @RequestBody MovieUpdateRequest request){
+        return  ResponseEntity.status(HttpStatus.OK).body(contentService.updateMovie(request));
     }
 
     //Get all movies
@@ -62,5 +66,11 @@ public class ContentController {
     )
     public ContentResponse getHlsUrlForStreaming(@PathVariable String movieId){
         return contentService.getHlsUrlForStreaming(movieId);
+    }
+
+    @DeleteMapping("/{movieId}")
+    public ResponseEntity<Void> deleteMovie(@PathVariable String movieId) {
+        contentService.deleteMovie(movieId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -25,4 +25,21 @@ public class KafkaConfig {
                 .replicas(1)
                 .build();
     }
+
+    // Published when video is uploaded to s3
+    @Bean
+    public NewTopic videoDeletedEvent(){
+        return TopicBuilder.name("video.deleted")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic ratingUpdateEvent(){
+        return TopicBuilder.name("rating.update")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

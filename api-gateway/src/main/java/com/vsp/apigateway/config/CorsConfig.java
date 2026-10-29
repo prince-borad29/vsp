@@ -19,7 +19,7 @@ public class CorsConfig {
         corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         
         // Allow all standard HTTP methods
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH","DELETE", "OPTIONS"));
         
         // Allow all headers (including Authorization for your JWT Bearer token)
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
