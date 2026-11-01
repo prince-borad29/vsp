@@ -20,6 +20,7 @@
         <module>video-service</module>
         <module>streaming-service</module>
         <module>review-service</module>
+        <module>email-service</module>
     </modules>
 
     <!-- 2. Set the global Spring Boot version -->

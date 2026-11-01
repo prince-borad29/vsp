@@ -44,10 +44,10 @@ public class EncodingService {
     private static final String VIDEO_ENCODED_TOPIC = "video.encoded";
 
     private static final List<int[]> VIDEO_QUALITIES = Arrays.asList(
-            new int[]{1920, 5000, 1080},  // 1080p - 5000k bitrate
-            new int[]{1280, 2800, 720},   // 720p - 2800k bitrate
+            new int[]{640, 800, 360},      // 360p - 800k bitrate
             new int[]{854, 1200, 480},    // 480p - 1200k bitrate
-            new int[]{640, 800, 360}      // 360p - 800k bitrate
+            new int[]{1280, 2800, 720},   // 720p - 2800k bitrate
+            new int[]{1920, 5000, 1080}  // 1080p - 5000k bitrate
     );
 
     public void encodeVideo(VideoUploadedEvent event) {
@@ -111,7 +111,7 @@ public class EncodingService {
                 String qualityDir = jobPath + "/encoded/" + height + "p";
                 Files.createDirectories(Paths.get(qualityDir));
 
-                encodeToHLS(localVideoPath, qualityDir, width, height, bitrate,keyInfoPath);
+                encodeToHLS(localVideoPath, qualityDir, width, height, bitrate, keyInfoPath);
                 log.info("Encoded {}p successfully", height);
             }
 
@@ -220,7 +220,7 @@ public class EncodingService {
                 "-hls_time", "10",
                 "-hls_list_size", "0",
                 "-hls_segment_filename", segmentPattern,
-                "-hls_key_info_file",keyInfoPath,
+                "-hls_key_info_file", keyInfoPath,
                 "-f", "hls",
                 playlistPath
         );
@@ -242,10 +242,10 @@ public class EncodingService {
         master.append("#EXT-X-VERSION:3\n\n");
 
         int[][] qualities = {
-                {1920, 5000, 1080},
-                {1280, 2800, 720},
+                {640, 800, 360},
                 {854, 1200, 480},
-                {640, 800, 360}
+                {1280, 2800, 720},
+                {1920, 5000, 1080}
         };
 
         for (int[] q : qualities) {

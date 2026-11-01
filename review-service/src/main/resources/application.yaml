@@ -28,9 +28,9 @@ spring:
           use:
             type:
               headers: false
-          value:
-            default:
-              type:
+
+jwt:
+  secret: ${JWT_SECRET}
 
 server:
   port: 8089

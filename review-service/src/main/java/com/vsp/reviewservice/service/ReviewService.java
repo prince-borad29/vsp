@@ -81,6 +81,17 @@ public class ReviewService {
     }
 
     public void deleteReview(String reviewId) {
+
+        Review saved = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review Not found for deletion"));
+
+        //Publish rating.update event for content-service
+        RatingUpdateEvent event = RatingUpdateEvent.builder()
+                .movieId(saved.getMovieId())
+                .rating(reviewRepository.findAvgRating(saved.getMovieId()))
+                .build();
+
         reviewRepository.deleteById(reviewId);
+        kafkaTemplate.send(RATING_UPDATE_TOPIC,saved.getMovieId(),event);
+
     }
 }

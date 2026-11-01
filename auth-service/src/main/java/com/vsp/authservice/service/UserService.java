@@ -20,7 +20,7 @@ public class UserService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    public MessageResponse registerUser(RegisterRequest request){
+    public MessageResponse registerUser(RegisterRequest request) {
         // 1. Business Logic: Check if user exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already taken!");
@@ -62,6 +62,43 @@ public class UserService {
 
         // 5. Business Logic: Handle failures securely (don't reveal if email vs password was wrong)
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+    }
+
+    public UserUpdateResponse updateUser(UserUpdateRequest request) {
+
+        UserAccount user = userRepository.findById(request.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+
+        UserAccount updated = userRepository.save(user);
+
+        String token = jwtService.generateToken(updated.getEmail(), updated.getId(), updated.getName(), updated.getRole().toString());
+
+        UserUpdateResponse response = UserUpdateResponse.builder()
+                .email(updated.getEmail())
+                .name(updated.getName())
+                .token(token)
+                .build();
+
+        return response;
+    }
+
+    public void updatePassword(PasswordUpdateRequest request) {
+
+        UserAccount user = userRepository.findById(request.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid Old password");
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+        userRepository.save(user);
+
     }
 
 }

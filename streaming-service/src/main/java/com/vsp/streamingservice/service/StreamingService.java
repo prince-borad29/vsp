@@ -187,16 +187,7 @@ public class StreamingService {
     }
 
 
-    /**
-     * invalidate cached streaming url
-     * called when video is re-encoded or updated
-     */
 
-    public void invalidateCache(String movieId){
-        String cacheKey = STREAMING_URL_CACHE_PREFIX + movieId;
-        redisTemplate.delete(cacheKey);
-        log.info("Streaming url cache invalidated for movie : {}",movieId);
-    }
 
     /**
      * Retrieves the raw AES-128 decryption key from the private S3 bucket.

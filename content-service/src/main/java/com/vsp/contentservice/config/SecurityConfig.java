@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/movies/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/movies/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/movies/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/movies/**").hasRole("ADMIN")
 
                         // Allow any authenticated user (standard or admin) to fetch/view movies
                         .requestMatchers(HttpMethod.GET, "/api/v1/movies/**").authenticated()
